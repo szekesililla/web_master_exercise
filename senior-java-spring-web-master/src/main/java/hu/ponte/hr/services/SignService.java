@@ -1,7 +1,7 @@
 package hu.ponte.hr.services;
 
 import hu.ponte.hr.config.SignConfig;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.nio.file.Files;
@@ -13,10 +13,10 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
 
 @Service
+@AllArgsConstructor
 public class SignService {
 
-    @Autowired
-    private SignConfig signConfig;
+    SignConfig signConfig;
 
     public String sign(String fileName) throws Exception {
         byte[] dataBytes = fileName.getBytes();
