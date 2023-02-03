@@ -12,7 +12,7 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Data
 @Builder
-public class Image {
+public class ImageMetaEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,8 +20,8 @@ public class Image {
     private String name;
     private String mimeType;
     private long size;
-    //@Lob
-    //private byte[] photo;
+    @Lob
+    private byte[] photo;
     @Lob
     private String digitalSign;
 }

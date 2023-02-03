@@ -1,12 +1,13 @@
 package hu.ponte.hr.services;
 
 import hu.ponte.hr.controller.ImageMeta;
-import hu.ponte.hr.entity.Image;
+import hu.ponte.hr.entity.ImageMetaEntity;
 import hu.ponte.hr.repository.ImageRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @Service
@@ -16,30 +17,36 @@ public class ImageStore {
     ImageRepository imageRepository;
     SignService signService;
 
-    public void saveImage(ImageMeta imageMeta) throws Exception {
+    public void saveImage(ImageMeta imageMeta) {
         String sign = signService.sign(imageMeta.getName());
-        Image image = Image.builder()
+        ImageMetaEntity imageMetaEntity = ImageMetaEntity.builder()
                 .name(imageMeta.getName())
                 .digitalSign(imageMeta.getDigitalSign())
                 .size(imageMeta.getSize())
                 .mimeType(imageMeta.getMimeType())
                 .digitalSign(sign)
+                .photo(imageMeta.getPhoto())
                 .build();
-        imageRepository.save(image);
+        imageRepository.save(imageMetaEntity);
     }
 
     public List<ImageMeta> fetchImageList() {
-        List<Image> images = (List<Image>) imageRepository.findAll();
-        return images.stream().map(this::buildImageMeta).collect(Collectors.toList());
+        List<ImageMetaEntity> imageMetaEntities = (List<ImageMetaEntity>) imageRepository.findAll();
+        return imageMetaEntities.stream().map(this::buildImageMeta).collect(Collectors.toList());
     }
 
-    private ImageMeta buildImageMeta(Image image) {
+    public ImageMeta findImageById(Long id) {
+        return buildImageMeta(imageRepository.findById(id).orElseThrow(NoSuchElementException::new));
+    }
+
+    private ImageMeta buildImageMeta(ImageMetaEntity imageMetaEntity) {
         return ImageMeta.builder()
-                .id(image.getId().toString())
-                .name(image.getName())
-                .size(image.getSize())
-                .mimeType(image.getMimeType())
-                .digitalSign(image.getDigitalSign())
+                .id(imageMetaEntity.getId().toString())
+                .name(imageMetaEntity.getName())
+                .size(imageMetaEntity.getSize())
+                .mimeType(imageMetaEntity.getMimeType())
+                .digitalSign(imageMetaEntity.getDigitalSign())
+                .photo(imageMetaEntity.getPhoto())
                 .build();
     }
 

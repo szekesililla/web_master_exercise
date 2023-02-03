@@ -2,36 +2,41 @@ package hu.ponte.hr.services;
 
 import hu.ponte.hr.config.SignConfig;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.security.KeyFactory;
-import java.security.PrivateKey;
-import java.security.Signature;
+import java.security.*;
+import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class SignService {
 
     SignConfig signConfig;
 
-    public String sign(String fileName) throws Exception {
+    public String sign(String fileName) {
         byte[] dataBytes = fileName.getBytes();
+        KeyFactory keyFactory;
+        Signature signature;
+        byte[] digitalSignature = new byte[0];
 
-        byte[] key = Files.readAllBytes(Paths.get(signConfig.getPrimaryKeyPath()));
-        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(key);
-        PrivateKey privateKey = keyFactory.generatePrivate(keySpec);
+        try {
+            keyFactory = KeyFactory.getInstance("RSA");
+            signature = Signature.getInstance("SHA256withRSA");
 
-        Signature signature = Signature.getInstance("SHA256withRSA");
-        signature.initSign(privateKey);
+            PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(signConfig.getPrimaryKey());
+            PrivateKey privateKey = keyFactory.generatePrivate(keySpec);
+            signature.initSign(privateKey);
+            signature.update(dataBytes);
+            digitalSignature = signature.sign();
+        } catch (InvalidKeyException | InvalidKeySpecException | SignatureException |
+                 NoSuchAlgorithmException invalidKeyException) {
+            log.error("Couldn't generate digital sign.", invalidKeyException);
+        }
 
-        signature.update(dataBytes);
-
-        byte[] digitalSignature = signature.sign();
         return Base64.getEncoder().encodeToString(digitalSignature);
     }
 
