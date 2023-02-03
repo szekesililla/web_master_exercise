@@ -22,6 +22,7 @@ public class AppConfig {
     public CommonsMultipartResolver multipartResolver() {
         CommonsMultipartResolver multipartResolver = new CommonsMultipartResolver();
         multipartResolver.setMaxUploadSize(100000000);
+        multipartResolver.setMaxUploadSizePerFile(2000000);
         return multipartResolver;
     }
 
